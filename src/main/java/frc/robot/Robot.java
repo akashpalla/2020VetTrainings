@@ -14,26 +14,34 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class Robot extends TimedRobot {
 
-  private TalonSRX leftIntake, rightIntake, pivotMotor;
-  private DigitalInput topSensor, bottomSensor;
-  private JoystickButton intakeButton;
+  private TalonSRX leftFront, rightFront, leftBack, rightBack;
   private Joystick joy;
   
 
   public void robotInit() {
-    leftIntake = new TalonSRX(0);
-    rightIntake = new TalonSRX(1);
+  
+    leftFront = new TalonSRX(1);
+    leftBack = new TalonSRX(2);
+    rightFront = new TalonSRX(3);
+    rightBack = new TalonSRX(4);
 
-    pivotMotor = new TalonSRX(3);
-
-    topSensor = new DigitalInput(9);
-    bottomSensor = new DigitalInput(8);
-
-    joy = new Joystick(1);
-    intakeButton = new JoystickButton(joy, 1);
+    leftBack.follow(leftFront);
+    rightBack.follow(rightFront);
+    
+    joy = new Joystick(0);
 
 
   }
+
+  public double getX(){
+    return joy.getRawAxis(5);
+  }
+
+  public double getY(){
+    return joy.getRawAxis(6);
+  }
+
+
 
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
@@ -64,26 +72,12 @@ public class Robot extends TimedRobot {
   
   public void teleopPeriodic() {
 
-    if(intakeButton.get()){                                         // If the intake button is pressed the pivot will lower until the bottom Sensor is triggered. Once the sensor is triggered
-      if(!bottomSensor.get()){                                      // the intake motors will run. 
-        pivotMotor.set(ControlMode.PercentOutput, -0.3);            // When the button is released, the intake will stop and the pivot will move up until the top sensor is triggered
-      }else{                                                                  
-        pivotMotor.set(ControlMode.PercentOutput, 0);
-        leftIntake.set(ControlMode.PercentOutput, .4);
-        rightIntake.set(ControlMode.PercentOutput, .4);
-      }
-    }else{
-      leftIntake.set(ControlMode.PercentOutput, 0);
-      rightIntake.set(ControlMode.PercentOutput, 0);
-
-      if(!topSensor.get()){
-        pivotMotor.set(ControlMode.PercentOutput, .3);
-      }else{
-        pivotMotor.set(ControlMode.PercentOutput, 0);
-      }
-
-    }
+    double leftSpeed = 0.7 * getY() + 0.3 * getX();
+    double rightSpeed = 0.7 * getY() - 0.3 * getX();
    
+    leftFront.set(ControlMode.PercentOutput, leftSpeed);
+    rightFront.set(ControlMode.PercentOutput,rightSpeed);
+    
   }
 
 
@@ -95,4 +89,5 @@ public class Robot extends TimedRobot {
   
   public void testPeriodic() {
   }
+
 }
